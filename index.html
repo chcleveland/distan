@@ -1,0 +1,1963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Distan — School Consolidation &amp; Expansion Game</title>
+<meta name="description" content="A Catan-style strategy game about consolidating and expanding school districts. Build bus routes, open schools, and consolidate campuses to reach 10 victory points.">
+<style>
+/* ---- base site theme (style.css) ---- */
+/* ============================================================
+   Distan — shared styles
+   Education-themed strategy game
+   ============================================================ */
+
+:root {
+  /* theme palette */
+  --ink:        #0e294a;   /* navy */
+  --ink-soft:   #2f4a66;
+  --muted:      #5f7488;
+  --line:       #d8e1e9;
+  --line-soft:  #e8edf2;
+  --paper:      #ffffff;
+  --cream:      #f3f6f9;   /* page background (cool light) */
+  --cream-2:    #e7edf2;
+  --accent:     #005f85;   /* teal-blue */
+  --accent-d:   #0e294a;   /* navy */
+  --accent-l:   #0f9ed5;   /* bright blue */
+  --gold:       #e97132;   /* orange (warnings) */
+  --green:      #4ea72e;
+  --green-bg:   #eaf4e2;
+  --lime:       #8cc73f;
+  --teal:       #33bead;
+  --neg:        #c0392b;   /* semantic red (negative / danger) */
+  --neg-bg:     #fbece9;
+  --red-bg:     #fbece9;
+  --blue:       #005f85;
+  --blue-bg:    #e4eff5;
+  --maxw:       margin;
+  --radius:     10px;
+  --shadow:     0 1px 2px rgba(14,41,74,.07), 0 6px 24px rgba(14,41,74,.08);
+  --mono: ui-monospace, "SF Mono", "SFMono-Regular", "Roboto Mono", Menlo, Consolas, monospace;
+  --sans: "Aptos", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --serif: "Aptos Display", "Aptos", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: var(--sans);
+  color: var(--ink);
+  background: var(--cream);
+  line-height: 1.6;
+  font-size: 17px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------- Layout ---------- */
+.wrap { max-width: 920px; margin: 0 auto; padding: 0 22px; }
+.wrap-wide { max-width: 1120px; margin: 0 auto; padding: 0 22px; }
+main { padding: 38px 0 80px; }
+section { margin: 0 0 34px; }
+
+/* ---------- Top bar / nav ---------- */
+.topbar {
+  background: var(--ink);
+  color: #eef3f7;
+  border-bottom: 3px solid var(--accent-l);
+  position: sticky; top: 0; z-index: 50;
+}
+.brand-logo { height: 22px; width: auto; display: inline-block; vertical-align: middle; }
+.topbar .wrap-wide {
+  display: flex; align-items: center; gap: 18px;
+  min-height: 56px; flex-wrap: wrap; padding-top: 6px; padding-bottom: 6px;
+}
+.brand {
+  font-weight: 700; letter-spacing: .2px; color: #fff; text-decoration: none;
+  font-size: 15px; white-space: nowrap; display: flex; align-items: center; gap: 8px;
+}
+.brand .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--lime); display: inline-block; }
+.nav { display: flex; gap: 2px; flex-wrap: wrap; margin-left: auto; }
+.nav a {
+  color: #b9c7d4; text-decoration: none; font-size: 13.5px; font-weight: 500;
+  padding: 6px 10px; border-radius: 6px; white-space: nowrap;
+}
+.nav a:hover { color: #fff; background: rgba(255,255,255,.08); }
+.nav a.active { color: #fff; background: var(--accent); }
+
+/* ---------- Hero ---------- */
+.hero {
+  background:
+    radial-gradient(1200px 400px at 80% -120px, rgba(15,158,213,.12), transparent 60%),
+    linear-gradient(180deg, var(--cream-2), var(--cream));
+  border-bottom: 1px solid var(--line);
+}
+.hero .wrap-wide { padding-top: 46px; padding-bottom: 40px; }
+.eyebrow {
+  text-transform: uppercase; letter-spacing: .14em; font-size: 12.5px;
+  font-weight: 700; color: var(--accent); margin: 0 0 12px;
+}
+.hero h1 {
+  font-family: var(--serif); font-weight: 700; line-height: 1.12;
+  font-size: clamp(28px, 4.6vw, 46px); margin: 0 0 14px; color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.hero p.lede { font-size: 19px; color: var(--ink-soft); max-width: 720px; margin: 0 0 22px; }
+.meta-row { display: flex; gap: 10px 26px; flex-wrap: wrap; color: var(--muted); font-size: 14.5px; }
+.meta-row b { color: var(--ink-soft); font-weight: 600; }
+
+/* ---------- Typography ---------- */
+h2 {
+  font-family: var(--serif); font-size: 27px; line-height: 1.2; margin: 0 0 14px;
+  color: var(--ink); letter-spacing: -0.01em;
+}
+h3 { font-size: 20px; margin: 30px 0 10px; color: var(--ink); }
+h4 { font-size: 16px; margin: 22px 0 6px; color: var(--accent-d); text-transform: none; letter-spacing: 0; }
+p { margin: 0 0 14px; }
+a { color: var(--accent-d); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+a:hover { color: var(--accent); }
+ul, ol { margin: 0 0 16px; padding-left: 22px; }
+li { margin: 6px 0; }
+strong { color: var(--ink); }
+hr { border: 0; border-top: 1px solid var(--line); margin: 34px 0; }
+.lead { font-size: 19px; color: var(--ink-soft); }
+.small { font-size: 14px; color: var(--muted); }
+code, .mono { font-family: var(--mono); font-size: .92em; }
+code {
+  background: var(--cream-2); border: 1px solid var(--line);
+  padding: 1px 5px; border-radius: 4px; color: var(--accent-d);
+}
+
+/* ---------- Section label ---------- */
+.kicker {
+  display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+}
+
+/* ---------- Cards ---------- */
+.cards { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.card {
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 20px 22px; box-shadow: var(--shadow); display: flex; flex-direction: column;
+}
+.card h3 { margin-top: 0; }
+.card.link { text-decoration: none; color: inherit; transition: transform .12s ease, box-shadow .12s ease, border-color .12s; }
+.card.link:hover { transform: translateY(-2px); border-color: var(--accent-l); box-shadow: 0 8px 30px rgba(43,38,34,.10); }
+.card .num { font-family: var(--serif); font-size: 14px; color: var(--accent); font-weight: 700; }
+.card .arrow { margin-top: auto; color: var(--accent); font-weight: 600; font-size: 14px; padding-top: 10px; }
+
+/* ---------- Callouts ---------- */
+.callout {
+  border: 1px solid var(--line); border-left: 4px solid var(--accent);
+  background: var(--paper); border-radius: 8px; padding: 14px 18px; margin: 18px 0;
+}
+.callout.note   { border-left-color: var(--blue); background: var(--blue-bg); }
+.callout.good   { border-left-color: var(--green); background: var(--green-bg); }
+.callout.warn   { border-left-color: var(--gold); background: #fdeee2; }
+.callout.danger { border-left-color: var(--neg); background: var(--neg-bg); }
+.callout .t { font-weight: 700; margin-bottom: 4px; display: block; }
+.callout p:last-child { margin-bottom: 0; }
+
+/* ---------- Tables ---------- */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; margin: 16px 0; background: var(--paper); }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line-soft); }
+thead th { background: var(--cream-2); font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); border-bottom: 1px solid var(--line); }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); }
+tr.total td { font-weight: 700; background: var(--cream); border-top: 2px solid var(--line); }
+.table-cap { font-size: 13px; color: var(--muted); margin: 6px 2px 0; }
+
+/* ---------- Timeline (facilitator) ---------- */
+.timeline { border-left: 2px solid var(--line); margin: 18px 0 18px 8px; padding-left: 0; list-style: none; }
+.tl-item { position: relative; padding: 0 0 22px 26px; }
+.tl-item::before {
+  content: ""; position: absolute; left: -7px; top: 4px; width: 12px; height: 12px;
+  background: var(--accent); border-radius: 50%; border: 2px solid var(--cream);
+}
+.tl-time { font-family: var(--mono); font-size: 13px; color: var(--accent-d); font-weight: 700; }
+.tl-dur { color: var(--muted); font-size: 12.5px; }
+.tl-item h4 { margin: 2px 0 6px; color: var(--ink); }
+
+/* ---------- Pills / tags ---------- */
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--cream-2); border: 1px solid var(--line); color: var(--ink-soft); }
+.pill.accent { background: #fdeee2; border-color: #f6cdb0; color: #b8541a; }
+.pill.green  { background: var(--green-bg); border-color: #c2e3ac; color: #3c7f24; }
+.pill.blue   { background: var(--blue-bg); border-color: #bcdcee; color: var(--blue); }
+
+/* ---------- Two-column compare ---------- */
+.compare { display: grid; gap: 18px; grid-template-columns: 1fr 1fr; }
+@media (max-width: 760px){ .compare { grid-template-columns: 1fr; } }
+.compare .card h3 { display: flex; align-items: center; gap: 8px; }
+
+/* ---------- Calculator ---------- */
+.calc-grid { display: grid; gap: 22px; grid-template-columns: 360px 1fr; align-items: start; }
+@media (max-width: 880px){ .calc-grid { grid-template-columns: 1fr; } }
+.panel { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+.panel-h { padding: 14px 18px; border-bottom: 1px solid var(--line); font-weight: 700; background: var(--cream-2); border-radius: var(--radius) var(--radius) 0 0; }
+.panel-b { padding: 18px; }
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--ink-soft); }
+.field .hint { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+.field input[type=number], .field select {
+  width: 100%; padding: 9px 11px; font-size: 15px; font-family: var(--mono);
+  border: 1px solid var(--line); border-radius: 7px; background: var(--cream); color: var(--ink);
+}
+.field input:focus, .field select:focus { outline: 2px solid var(--accent-l); outline-offset: 0; border-color: var(--accent-l); background: #fff; }
+.input-prefix { position: relative; }
+.input-prefix span.pfx { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-family: var(--mono); font-size: 14px; pointer-events: none; }
+.input-prefix input { padding-left: 24px; }
+.btn {
+  display: inline-block; background: var(--accent); color: #fff; border: 0; cursor: pointer;
+  padding: 10px 18px; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: var(--sans);
+  text-decoration: none;
+}
+.btn:hover { background: var(--accent-d); color: #fff; }
+.btn.ghost { background: transparent; color: var(--accent-d); border: 1px solid var(--line); }
+.btn.ghost:hover { background: var(--cream-2); }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+
+.results { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); }
+.stat { background: var(--cream); border: 1px solid var(--line); border-radius: 9px; padding: 14px 16px; }
+.stat .k { font-size: 12.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+.stat .v { font-family: var(--serif); font-size: 27px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.stat.pos .v { color: var(--green); }
+.stat.neg .v { color: var(--neg); }
+.stat .sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.verdict { padding: 12px 16px; border-radius: 9px; font-weight: 600; margin-top: 4px; }
+.verdict.pos { background: var(--green-bg); color: #3c7f24; border: 1px solid #c2e3ac; }
+.verdict.neg { background: var(--neg-bg); color: var(--neg); border: 1px solid #f0c4bd; }
+.verdict.edge{ background: #fdeee2; color: #b8541a; border: 1px solid #f6cdb0; }
+
+details.builder { border: 1px solid var(--line); border-radius: 8px; padding: 0; margin: 6px 0 14px; background: var(--cream); }
+details.builder summary { cursor: pointer; padding: 10px 14px; font-weight: 600; font-size: 14px; color: var(--accent-d); }
+details.builder[open] summary { border-bottom: 1px solid var(--line); }
+details.builder .inner { padding: 14px; }
+
+/* ---------- Footer ---------- */
+footer { border-top: 1px solid var(--line); background: var(--cream-2); color: var(--muted); font-size: 14px; }
+footer .wrap-wide { padding: 26px 22px; display: flex; gap: 14px; justify-content: space-between; flex-wrap: wrap; }
+footer a { color: var(--accent-d); }
+
+/* ---------- Misc ---------- */
+.toc { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px 16px; margin: 0 0 26px; }
+.toc strong { display: block; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
+.toc ol { margin: 0; padding-left: 20px; }
+.toc a { text-decoration: none; }
+.toc a:hover { text-decoration: underline; }
+.crumbs { font-size: 13.5px; color: var(--muted); margin-bottom: 6px; }
+.crumbs a { color: var(--muted); }
+.pager { display: flex; justify-content: space-between; gap: 12px; margin-top: 44px; border-top: 1px solid var(--line); padding-top: 20px; flex-wrap: wrap; }
+.pager a { text-decoration: none; font-weight: 600; }
+.pager .nx { margin-left: auto; text-align: right; }
+.formula { background: var(--ink); color: #f3ece2; border-radius: 8px; padding: 14px 18px; font-family: var(--mono); font-size: 14.5px; margin: 14px 0; overflow-x: auto; }
+.formula .hl { color: #f0b8c1; }
+.tag-list { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+
+/* ---------- Print ---------- */
+@media print {
+  .topbar, .pager, .no-print, footer { display: none !important; }
+  body { background: #fff; font-size: 12pt; }
+  .wrap, .wrap-wide { max-width: 100%; }
+  .card, .panel, .callout, .table-wrap { box-shadow: none; break-inside: avoid; }
+  a { color: #000; text-decoration: none; }
+  .hero { background: #fff; }
+  main { padding-top: 10px; }
+}
+
+/* ---- game styles (game.css) ---- */
+/* ============================================================
+   Distan — game styles
+   Reuses site palette (assets/css/style.css :root vars)
+   ============================================================ */
+
+:root {
+  --students:   #4ea72e;   /* enrollment  (green)  */
+  --funding:    #e0a100;   /* funding     (gold)   */
+  --teachers:   #c0392b;   /* teachers    (red)    */
+  --facilities: #a4642c;   /* facilities  (brown)  */
+  --supplies:   #005f85;   /* supplies    (blue)   */
+  --vacant:     #c9b98f;   /* vacant lot  (tan)    */
+}
+
+.game-body { background: var(--cream); }
+
+/* ---------- Start screen ---------- */
+.start-screen { padding: 34px 0 60px; }
+.start-screen h1 { font-family: var(--serif); font-size: clamp(30px,5vw,48px); margin: 0 0 14px; }
+.setup-panel {
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 22px 24px; max-width: 640px; margin: 26px 0 0;
+}
+.setup-panel h2 { margin-top: 0; }
+.field { display: flex; flex-direction: column; gap: 6px; margin: 0 0 16px; max-width: 280px; }
+.field span { font-weight: 600; font-size: 14px; color: var(--ink-soft); }
+.field select, .field input {
+  font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff;
+}
+.player-config { display: grid; gap: 10px; margin-bottom: 18px; }
+.player-row { display: flex; align-items: center; gap: 12px; }
+.player-row .swatch { width: 20px; height: 20px; border-radius: 50%; flex: none; border: 2px solid rgba(0,0,0,.15); }
+.player-row input[type=text] { flex: 1; max-width: 260px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+.player-row label.aitoggle { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--ink-soft); white-space: nowrap; }
+.setup-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* ---------- Buttons ---------- */
+.btn {
+  font: inherit; font-weight: 600; cursor: pointer; border-radius: 8px; padding: 10px 16px;
+  border: 1px solid transparent; transition: background .12s, box-shadow .12s, transform .04s; line-height: 1.2;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-d); }
+.btn-ghost { background: #fff; border-color: var(--line); color: var(--ink); }
+.btn-ghost:hover { background: var(--cream-2); }
+.btn-sm { padding: 7px 11px; font-size: 13.5px; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ---------- How-to ---------- */
+.howto {
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 22px 24px; max-width: 720px; margin: 20px 0 0;
+}
+.res-legend { list-style: none; padding: 0; display: grid; gap: 8px; }
+.res-legend li { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+.cost-table { border-collapse: collapse; width: 100%; margin: 8px 0 4px; }
+.cost-table th, .cost-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line-soft); font-size: 14.5px; vertical-align: middle; }
+.cost-table th { color: var(--ink-soft); }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 5px; font-weight: 600; font-size: 13px;
+  padding: 3px 9px; border-radius: 999px; background: var(--cream-2); color: var(--ink); white-space: nowrap;
+}
+.chip.mini { padding: 3px 6px; font-size: 14px; }
+.chip.students   { background: #e7f3e0; }
+.chip.funding    { background: #fbf0cf; }
+.chip.teachers   { background: #fbe4e1; }
+.chip.facilities { background: #f0e6dc; }
+.chip.supplies   { background: #e0eef5; }
+
+/* ---------- Game layout ---------- */
+.game-screen { padding: 18px 0 60px; }
+.game-layout { display: flex; gap: 22px; align-items: flex-start; max-width: 1200px; margin: 0 auto; padding: 0 18px; flex-wrap: wrap; }
+.board-col { flex: 1 1 560px; min-width: 320px; }
+.side-col { flex: 0 1 340px; min-width: 300px; display: flex; flex-direction: column; gap: 14px; }
+
+.board-wrap { background: linear-gradient(180deg,#dfeaf1,#cfe0ea); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+#board { width: 100%; height: auto; display: block; touch-action: manipulation; }
+
+.turn-banner {
+  margin-top: 12px; padding: 12px 16px; border-radius: 10px; background: var(--paper);
+  border: 1px solid var(--line); box-shadow: var(--shadow); font-size: 15px; min-height: 24px;
+}
+.turn-banner b { color: var(--ink); }
+
+/* ---------- SVG board pieces ---------- */
+.hex { stroke: #fff; stroke-width: 2; }
+.hex.students   { fill: #6cbf49; }
+.hex.funding    { fill: #f0c33c; }
+.hex.teachers   { fill: #d05a4c; }
+.hex.facilities { fill: #b3763f; }
+.hex.supplies   { fill: #3a86ab; }
+.hex.vacant     { fill: #d8caa2; }
+
+.num-token { fill: #f7f1e3; stroke: #b9a97e; stroke-width: 1; }
+.num-text { font: 700 17px var(--sans); text-anchor: middle; dominant-baseline: central; fill: var(--ink); }
+.num-text.hot { fill: #c0392b; }
+.num-pips { fill: #7a6b45; }
+
+.hex-label { font: 600 10px var(--sans); text-anchor: middle; fill: rgba(255,255,255,.9); pointer-events: none; }
+
+.edge { stroke: rgba(14,41,74,.14); stroke-width: 5; stroke-linecap: round; cursor: default; }
+.edge.road { stroke-width: 9; }
+.edge.clickable { cursor: pointer; stroke: rgba(0,95,133,.30); stroke-width: 7; }
+.edge.clickable:hover { stroke: var(--accent-l); stroke-width: 11; }
+
+.vertex-hit { fill: transparent; cursor: default; }
+.vertex-dot { pointer-events: none; }
+.vspot { fill: rgba(255,255,255,.55); stroke: var(--accent); stroke-width: 2; cursor: pointer; }
+.vspot:hover { fill: var(--accent-l); }
+
+.robber { fill: #26333f; stroke: #0c1116; stroke-width: 1.5; }
+.hex.moveable { cursor: pointer; }
+.hex.moveable:hover { stroke: #26333f; stroke-width: 4; }
+
+.port { font: 700 11px var(--sans); text-anchor: middle; dominant-baseline: central; fill: var(--ink); }
+.port-bg { fill: rgba(255,255,255,.82); stroke: var(--accent); stroke-width: 1.5; }
+.port-link { stroke: rgba(14,41,74,.35); stroke-width: 2; stroke-dasharray: 3 3; }
+
+/* ---------- Dice ---------- */
+.dice-area { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 12px 14px; display: flex; align-items: center; gap: 14px; }
+.dice { display: flex; gap: 10px; }
+.die {
+  width: 40px; height: 40px; border-radius: 9px; background: #fff; border: 1px solid var(--line);
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,.05); display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 22px; color: var(--ink);
+}
+.die.rolling { animation: shake .5s ease; }
+@keyframes shake { 0%,100%{transform:translateY(0) rotate(0)} 25%{transform:translateY(-4px) rotate(-8deg)} 75%{transform:translateY(2px) rotate(8deg)} }
+.dice-total { font-size: 14px; color: var(--muted); }
+.dice-total b { font-size: 20px; color: var(--ink); }
+
+/* ---------- Action bar ---------- */
+.action-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.action-bar .btn { width: 100%; text-align: center; }
+.action-bar .btn.full { grid-column: 1 / -1; }
+.action-bar .cost { display: block; font-size: 11.5px; font-weight: 500; opacity: .85; margin-top: 2px; }
+
+/* ---------- Hand ---------- */
+.hand, .scoreboard { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 12px 14px; }
+.hand h3, .scoreboard h3 { margin: 0 0 10px; font-size: 15px; }
+.hand-resources { display: flex; flex-wrap: wrap; gap: 8px; }
+.rescard {
+  display: flex; flex-direction: column; align-items: center; min-width: 52px; padding: 8px 6px 6px;
+  border-radius: 8px; border: 1px solid var(--line); background: var(--cream);
+}
+.rescard .ic { font-size: 20px; line-height: 1; }
+.rescard .ct { font-weight: 800; font-size: 18px; margin-top: 2px; }
+.rescard .nm { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.rescard.students   { border-top: 3px solid var(--students); }
+.rescard.funding    { border-top: 3px solid var(--funding); }
+.rescard.teachers   { border-top: 3px solid var(--teachers); }
+.rescard.facilities { border-top: 3px solid var(--facilities); }
+.rescard.supplies   { border-top: 3px solid var(--supplies); }
+
+.hand-dev { display: flex; flex-wrap: wrap; gap: 8px; }
+.devcard {
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--cream);
+  font-size: 13px; cursor: pointer; min-width: 120px;
+}
+.devcard:hover { border-color: var(--accent); background: #fff; }
+.devcard.locked { opacity: .55; cursor: not-allowed; }
+.devcard b { display: block; font-size: 13.5px; margin-bottom: 2px; }
+.devcard .small { font-size: 11px; color: var(--muted); }
+.hand-dev .empty, .hand-resources .empty { font-size: 13px; color: var(--muted); }
+
+/* ---------- Scoreboard ---------- */
+.scoreboard-list { display: flex; flex-direction: column; gap: 8px; }
+.score-row { display: flex; align-items: center; gap: 10px; padding: 7px 9px; border-radius: 8px; border: 1px solid var(--line-soft); }
+.score-row.active { border-color: var(--accent); background: #f2f8fb; box-shadow: inset 0 0 0 1px var(--accent); }
+.score-row .swatch { width: 16px; height: 16px; border-radius: 50%; flex: none; border: 2px solid rgba(0,0,0,.15); }
+.score-row .pname { font-weight: 600; flex: 1; font-size: 14px; }
+.score-row .pmeta { font-size: 11.5px; color: var(--muted); }
+.score-row .vp { font-weight: 800; font-size: 16px; }
+.score-row .badge { font-size: 12px; }
+.score-row.aiflag .pname::after { content: " · CPU"; font-weight: 500; color: var(--muted); font-size: 12px; }
+
+/* ---------- Log ---------- */
+.log-wrap { max-width: 1200px; margin: 18px auto 0; padding: 0 18px; }
+.log-wrap h3 { margin: 0 0 8px; font-size: 15px; }
+.log { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 10px 14px; max-height: 190px; overflow-y: auto; font-size: 13.5px; }
+.log .entry { padding: 3px 0; border-bottom: 1px solid var(--line-soft); }
+.log .entry:last-child { border-bottom: 0; }
+.log .entry .who { font-weight: 700; }
+
+/* ---------- Modal ---------- */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(14,41,74,.42); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
+.modal-backdrop[hidden] { display: none; }
+.modal { background: #fff; border-radius: 14px; box-shadow: 0 20px 60px rgba(14,41,74,.35); max-width: 520px; width: 100%; padding: 22px 24px; max-height: 88vh; overflow-y: auto; }
+.modal h2 { margin-top: 0; font-size: 22px; }
+.modal-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.trade-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: center; }
+.trade-col h4 { margin: 0 0 8px; }
+.trade-opt { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+.trade-opt button { min-width: 30px; }
+.give-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 6px; }
+.discard-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.discard-row .stepper { display: flex; align-items: center; gap: 8px; }
+.stepper button { width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--line); background: #fff; font-weight: 700; cursor: pointer; }
+.winner-box { text-align: center; padding: 10px 0; }
+.winner-box .trophy { font-size: 48px; }
+
+@media (max-width: 720px) {
+  .game-layout { flex-direction: column; }
+  .side-col { flex-basis: auto; width: 100%; }
+}
+
+</style>
+</head>
+<body class="game-body">
+<header class="topbar">
+  <div class="wrap-wide">
+    <a class="brand" href="https://chcleveland.github.io/"><span class="dot"></span> Christopher Cleveland</a>
+    <nav class="nav">
+      <a href="index.html" class="active">Distan</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============ START / SETUP SCREEN ============ -->
+<section id="start-screen" class="start-screen">
+  <div class="wrap-wide">
+    <p class="eyebrow">A teaching game · education finance</p>
+    <h1>Distan</h1>
+    <p class="lede">A strategy game about <strong>school-district consolidation and expansion</strong>, played
+      in the style of <em>Settlers of Catan</em>. Compete to grow the strongest network of schools by
+      collecting enrollment, funding, teachers, facilities, and supplies across the county — then
+      consolidate small schools into full district campuses. First to <strong>10 victory points</strong> wins.</p>
+
+    <div class="setup-panel">
+      <h2>New game</h2>
+      <label class="field">
+        <span>Number of districts (players)</span>
+        <select id="numPlayers">
+          <option value="2">2</option>
+          <option value="3" selected>3</option>
+          <option value="4">4</option>
+        </select>
+      </label>
+      <div id="playerConfig" class="player-config"></div>
+      <div class="setup-actions">
+        <button id="startBtn" class="btn btn-primary">Start game</button>
+        <button id="howtoBtn" class="btn btn-ghost">How to play</button>
+      </div>
+    </div>
+
+    <div id="howto" class="howto" hidden>
+      <h2>How to play</h2>
+      <p>Each hex is a <strong>community</strong> that produces one resource when its number is rolled on
+        two dice. Your buildings sit on the <strong>corners</strong> where communities meet, so a
+        school touching three communities collects from all three.</p>
+      <h3>Resources</h3>
+      <ul class="res-legend">
+        <li><span class="chip students">🎓 Enrollment</span> students who fill your seats</li>
+        <li><span class="chip funding">💰 Funding</span> local tax &amp; state dollars</li>
+        <li><span class="chip teachers">🍎 Teachers</span> certified staff</li>
+        <li><span class="chip facilities">🏗️ Facilities</span> land &amp; construction</li>
+        <li><span class="chip supplies">📚 Supplies</span> books &amp; materials</li>
+      </ul>
+      <h3>What you build</h3>
+      <table class="cost-table">
+        <thead><tr><th>Build</th><th>Costs</th><th>Worth</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Bus route</strong> (road)</td><td><span class="chip facilities mini">🏗️</span><span class="chip supplies mini">📚</span></td><td>connects your network</td></tr>
+          <tr><td><strong>School</strong> (settlement)</td><td><span class="chip facilities mini">🏗️</span><span class="chip supplies mini">📚</span><span class="chip teachers mini">🍎</span><span class="chip students mini">🎓</span></td><td>1 VP</td></tr>
+          <tr><td><strong>District campus</strong> (city)</td><td><span class="chip students mini">🎓</span><span class="chip students mini">🎓</span><span class="chip funding mini">💰</span><span class="chip funding mini">💰</span><span class="chip funding mini">💰</span></td><td>2 VP · double production</td></tr>
+          <tr><td><strong>Policy card</strong> (dev card)</td><td><span class="chip funding mini">💰</span><span class="chip teachers mini">🍎</span><span class="chip students mini">🎓</span></td><td>varies</td></tr>
+        </tbody>
+      </table>
+      <h3>Key rules</h3>
+      <ul>
+        <li>Roll <strong>7</strong> and the <strong>budget cut</strong> moves: anyone holding more than 7
+          cards discards half, and you steal a resource from a district touching the cut hex.</li>
+        <li><strong>Longest bus network</strong> (5+ connected routes) and <strong>strongest
+          administration</strong> (3+ Administrator policy cards) are each worth 2 VP.</li>
+        <li>Trade with the <strong>bank</strong> at 4:1, or better if you build a school on a
+          trading port.</li>
+        <li>Place your first two schools during setup — the second one collects starting resources.</li>
+      </ul>
+      <button id="closeHowto" class="btn btn-ghost">Close</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GAME SCREEN ============ -->
+<main id="game-screen" class="game-screen" hidden>
+  <div class="game-layout">
+    <!-- Board -->
+    <div class="board-col">
+      <div class="board-wrap">
+        <svg id="board" viewBox="-285 -262 570 524" preserveAspectRatio="xMidYMid meet" aria-label="Game board"></svg>
+      </div>
+      <div id="turn-banner" class="turn-banner"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="side-col">
+      <div id="dice-area" class="dice-area">
+        <div class="dice">
+          <span id="die1" class="die">–</span>
+          <span id="die2" class="die">–</span>
+        </div>
+        <div id="dice-total" class="dice-total"></div>
+      </div>
+
+      <div id="action-bar" class="action-bar"></div>
+
+      <div class="hand">
+        <h3>Your resources</h3>
+        <div id="hand-resources" class="hand-resources"></div>
+      </div>
+
+      <div class="hand">
+        <h3>Policy cards</h3>
+        <div id="hand-dev" class="hand-dev"></div>
+      </div>
+
+      <div class="scoreboard">
+        <h3>Districts</h3>
+        <div id="scoreboard" class="scoreboard-list"></div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="log-wrap">
+    <h3>Game log</h3>
+    <div id="log" class="log"></div>
+  </div>
+</main>
+
+<!-- ============ MODAL ============ -->
+<div id="modal-backdrop" class="modal-backdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true">
+    <h2 id="modal-title"></h2>
+    <div id="modal-body"></div>
+    <div id="modal-actions" class="modal-actions"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap-wide">
+    <div>Distan — a teaching game</div>
+    <div>An education-themed strategy game. Not affiliated with CATAN GmbH.</div>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   Distan — School district consolidation & expansion
+   Plain JS, no dependencies. Hot-seat + optional CPU players.
+   ============================================================ */
+(function () {
+  "use strict";
+
+  /* ---------------- Constants & theming ---------------- */
+  const RES = ["students", "funding", "teachers", "facilities", "supplies"];
+  const RES_META = {
+    students:   { name: "Enrollment", short: "Students",   icon: "🎓" },
+    funding:    { name: "Funding",    short: "Funding",    icon: "💰" },
+    teachers:   { name: "Teachers",   short: "Teachers",   icon: "🍎" },
+    facilities: { name: "Facilities", short: "Facilities", icon: "🏗️" },
+    supplies:   { name: "Supplies",   short: "Supplies",   icon: "📚" },
+  };
+  // Which terrain produces which resource (name shown on hex)
+  const TERRAIN = {
+    students:   "Neighborhood",
+    funding:    "Tax Base",
+    teachers:   "College Town",
+    facilities: "Build Site",
+    supplies:   "Print Shop",
+    vacant:     "Vacant Lot",
+  };
+
+  const COST = {
+    road:       { facilities: 1, supplies: 1 },
+    settlement: { facilities: 1, supplies: 1, teachers: 1, students: 1 },
+    city:       { students: 2, funding: 3 },
+    dev:        { funding: 1, teachers: 1, students: 1 },
+  };
+
+  const PLAYER_COLORS = [
+    { fill: "#c0392b", name: "Red" },
+    { fill: "#2471c9", name: "Blue" },
+    { fill: "#e08e0b", name: "Orange" },
+    { fill: "#2f9e44", name: "Green" },
+  ];
+  const DEFAULT_NAMES = ["Red County", "Blue Valley", "Orange Unified", "Green Hills"];
+
+  const WIN_VP = 10;
+  const HAND_LIMIT = 7;          // discard threshold on a 7
+  const LONGEST_MIN = 5;         // min routes for Longest Bus Network
+  const ARMY_MIN = 3;            // min administrators for Strongest Administration
+
+  const R = 52;                  // hex radius (center to corner)
+  const DX = Math.sqrt(3) * R;   // horizontal spacing
+  const DY = 1.5 * R;            // vertical spacing
+  const LAYOUT = [3, 4, 5, 4, 3];
+
+  const SVGNS = "http://www.w3.org/2000/svg";
+
+  /* ---------------- RNG ---------------- */
+  function rnd(n) { return Math.floor(Math.random() * n); }
+  function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+  function d6() { return 1 + rnd(6); }
+
+  /* ---------------- Game state ---------------- */
+  let G = null;
+  let MODE = "idle";  // idle | setupS | setupR | road | settlement | city | robber | roadbuild | none
+  let pendingRoadBuilds = 0; // for Infrastructure Grant free roads
+  let onVertexPick = null;
+  let onEdgePick = null;
+  let onHexPick = null;
+
+  /* ---------------- Board geometry ---------------- */
+  function key(x, y) { return Math.round(x) + "," + Math.round(y); }
+
+  function buildBoard() {
+    const hexes = [];
+    LAYOUT.forEach((count, row) => {
+      for (let i = 0; i < count; i++) {
+        const x = (i - (count - 1) / 2) * DX;
+        const y = (row - (LAYOUT.length - 1) / 2) * DY;
+        hexes.push({ id: hexes.length, x, y, row, col: i });
+      }
+    });
+
+    // Corners -> unique vertices
+    const vmap = {};        // key -> vertex id
+    const vertices = [];
+    const emap = {};        // "a-b" -> edge id
+    const edges = [];
+
+    function vertexAt(x, y) {
+      const k = key(x, y);
+      if (vmap[k] === undefined) {
+        vmap[k] = vertices.length;
+        vertices.push({ id: vertices.length, x, y, hexes: [], edges: [], building: null, port: null });
+      }
+      return vmap[k];
+    }
+    function edgeBetween(a, b) {
+      const k = Math.min(a, b) + "-" + Math.max(a, b);
+      if (emap[k] === undefined) {
+        const va = vertices[a], vb = vertices[b];
+        emap[k] = edges.length;
+        edges.push({ id: edges.length, v: [a, b], mx: (va.x + vb.x) / 2, my: (va.y + vb.y) / 2, road: null });
+        va.edges.push(emap[k]); vb.edges.push(emap[k]);
+      }
+      return emap[k];
+    }
+
+    hexes.forEach((h) => {
+      const corners = [];
+      for (let k = 0; k < 6; k++) {
+        const ang = (Math.PI / 180) * (60 * k - 90);
+        corners.push(vertexAt(h.x + R * Math.cos(ang), h.y + R * Math.sin(ang)));
+      }
+      h.corners = corners;
+      corners.forEach((v) => { if (!vertices[v].hexes.includes(h.id)) vertices[v].hexes.push(h.id); });
+      for (let k = 0; k < 6; k++) edgeBetween(corners[k], corners[(k + 1) % 6]);
+    });
+
+    return { hexes, vertices, edges };
+  }
+
+  /* ---------------- Terrain + numbers + ports ---------------- */
+  function assignTerrain(board) {
+    const bag = [];
+    const counts = { students: 4, supplies: 4, teachers: 4, facilities: 3, funding: 3 };
+    Object.keys(counts).forEach((r) => { for (let i = 0; i < counts[r]; i++) bag.push(r); });
+    shuffle(bag);
+    // one vacant lot placed at a random hex
+    const vacantIdx = rnd(board.hexes.length);
+    let bi = 0;
+    board.hexes.forEach((h, i) => {
+      if (i === vacantIdx) { h.resource = "vacant"; }
+      else { h.resource = bag[bi++]; }
+    });
+
+    // number tokens (Catan distribution, no 7); assign to producing hexes
+    const tokens = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12];
+    shuffle(tokens);
+    let ti = 0;
+    board.hexes.forEach((h) => { h.number = h.resource === "vacant" ? null : tokens[ti++]; });
+
+    // robber starts on the vacant lot
+    board.hexes.forEach((h) => { h.robber = h.resource === "vacant"; });
+    G.robberHex = board.hexes.find((h) => h.robber).id;
+  }
+
+  function assignPorts(board) {
+    // Perimeter edges = edges belonging to only one hex.
+    const hexOfEdge = {};
+    board.hexes.forEach((h) => {
+      h.corners.forEach((c, k) => {
+        const a = h.corners[k], b = h.corners[(k + 1) % 6];
+        const ek = Math.min(a, b) + "-" + Math.max(a, b);
+        hexOfEdge[ek] = (hexOfEdge[ek] || 0) + 1;
+      });
+    });
+    const perimeter = board.edges.filter((e) => {
+      const ek = Math.min(e.v[0], e.v[1]) + "-" + Math.max(e.v[0], e.v[1]);
+      return hexOfEdge[ek] === 1;
+    });
+    // order perimeter edges by angle around center for even spacing
+    perimeter.sort((a, b) => Math.atan2(a.my, a.mx) - Math.atan2(b.my, b.mx));
+
+    const portTypes = [
+      { type: "any", rate: 3 }, { type: "students", rate: 2 },
+      { type: "any", rate: 3 }, { type: "funding", rate: 2 },
+      { type: "any", rate: 3 }, { type: "teachers", rate: 2 },
+      { type: "any", rate: 3 }, { type: "facilities", rate: 2 },
+      { type: "supplies", rate: 2 },
+    ];
+    const step = Math.floor(perimeter.length / portTypes.length);
+    G.ports = [];
+    portTypes.forEach((pt, i) => {
+      const e = perimeter[(i * step) % perimeter.length];
+      const port = { type: pt.type, rate: pt.rate, verts: e.v.slice(), mx: e.mx, my: e.my };
+      G.ports.push(port);
+      e.v.forEach((v) => { board.vertices[v].port = port; });
+    });
+  }
+
+  /* ---------------- Init ---------------- */
+  function newGame(playerDefs) {
+    const board = buildBoard();
+    G = {
+      board,
+      hexes: board.hexes,
+      vertices: board.vertices,
+      edges: board.edges,
+      players: playerDefs.map((p, i) => ({
+        id: i, name: p.name, isAI: p.isAI, color: PLAYER_COLORS[i].fill, colorName: PLAYER_COLORS[i].name,
+        res: { students: 0, funding: 0, teachers: 0, facilities: 0, supplies: 0 },
+        dev: [], newDev: [], playedKnights: 0, vpCards: 0,
+        settlements: [], cities: [], roads: [],
+        hasLongest: false, hasLargest: false, longestLen: 0,
+      })),
+      turn: 0,
+      phase: "setup",
+      setupStep: 0,     // index into setup order
+      rolled: false,
+      devPlayedThisTurn: false,
+      robberHex: null,
+      ports: [],
+      log: [],
+      winner: null,
+    };
+    assignTerrain(board);
+    assignPorts(board);
+
+    // dev card deck
+    const deck = [];
+    for (let i = 0; i < 14; i++) deck.push("knight");
+    for (let i = 0; i < 2; i++) deck.push("roadbuild");
+    for (let i = 0; i < 2; i++) deck.push("plenty");
+    for (let i = 0; i < 2; i++) deck.push("monopoly");
+    const vpNames = ["New Library", "STEM Lab", "Arts Wing", "Athletics Complex", "Early-Ed Center"];
+    vpNames.forEach((n) => deck.push("vp:" + n));
+    G.devDeck = shuffle(deck);
+
+    // setup order: forward then reverse (snake)
+    const n = G.players.length;
+    G.setupOrder = [];
+    for (let i = 0; i < n; i++) G.setupOrder.push({ p: i, round: 1 });
+    for (let i = n - 1; i >= 0; i--) G.setupOrder.push({ p: i, round: 2 });
+
+    renderAll();
+    log("Game begins. Place your first school.", null);
+    beginSetupStep();
+  }
+
+  /* ---------------- Helpers ---------------- */
+  function cur() { return G.players[G.turn]; }
+  function pip(num) { return num === null ? 0 : 6 - Math.abs(7 - num); }
+
+  function canAfford(pl, cost) { return Object.keys(cost).every((r) => pl.res[r] >= cost[r]); }
+  function pay(pl, cost) { Object.keys(cost).forEach((r) => { pl.res[r] -= cost[r]; }); }
+  function refund(pl, cost) { Object.keys(cost).forEach((r) => { pl.res[r] += cost[r]; }); }
+  function handSize(pl) { return RES.reduce((s, r) => s + pl.res[r], 0); }
+
+  function vertexNeighbors(vId) {
+    const v = G.vertices[vId];
+    const nb = [];
+    v.edges.forEach((eId) => { const e = G.edges[eId]; nb.push(e.v[0] === vId ? e.v[1] : e.v[0]); });
+    return nb;
+  }
+
+  // Public VP (visible to all) — excludes hidden VP policy cards
+  function publicVP(pl) {
+    let v = pl.settlements.length + pl.cities.length * 2;
+    if (pl.hasLongest) v += 2;
+    if (pl.hasLargest) v += 2;
+    return v;
+  }
+  function totalVP(pl) { return publicVP(pl) + pl.vpCards; }
+
+  /* ---------------- Placement validity ---------------- */
+  function canPlaceSettlement(vId, pl, requireRoad) {
+    const v = G.vertices[vId];
+    if (v.building) return false;
+    // distance rule: no neighbor may have a building
+    for (const nb of vertexNeighbors(vId)) if (G.vertices[nb].building) return false;
+    if (requireRoad) {
+      const touchesOwnRoad = v.edges.some((eId) => G.edges[eId].road === pl.id);
+      if (!touchesOwnRoad) return false;
+    }
+    return true;
+  }
+
+  function canPlaceRoad(eId, pl) {
+    const e = G.edges[eId];
+    if (e.road !== null) return false;
+    // must connect to own building or own road (not passing through opponent building)
+    return e.v.some((vId) => {
+      const v = G.vertices[vId];
+      if (v.building && v.building.player === pl.id) return true;
+      if (v.building && v.building.player !== pl.id) return false; // blocked vertex
+      return v.edges.some((oe) => oe !== eId && G.edges[oe].road === pl.id);
+    });
+  }
+
+  function anyValidSettlement(pl, requireRoad) {
+    return G.vertices.some((v) => canPlaceSettlement(v.id, pl, requireRoad));
+  }
+  function anyValidRoad(pl) { return G.edges.some((e) => canPlaceRoad(e.id, pl)); }
+
+  /* ---------------- Rendering ---------------- */
+  const svg = document.getElementById("board");
+
+  function el(tag, attrs, parent) {
+    const n = document.createElementNS(SVGNS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+
+  function hexPoints(h) {
+    const pts = [];
+    for (let k = 0; k < 6; k++) {
+      const ang = (Math.PI / 180) * (60 * k - 90);
+      pts.push((h.x + R * Math.cos(ang)).toFixed(1) + "," + (h.y + R * Math.sin(ang)).toFixed(1));
+    }
+    return pts.join(" ");
+  }
+
+  function renderBoard() {
+    svg.innerHTML = "";
+    const gPorts = el("g", {}, svg);
+    const gHex = el("g", {}, svg);
+    const gEdge = el("g", {}, svg);
+    const gVert = el("g", {}, svg);
+    const gRobber = el("g", {}, svg);
+
+    // Ports
+    G.ports.forEach((port) => {
+      const cx = port.mx * 1.18, cy = port.my * 1.18;
+      port.verts.forEach((v) => {
+        el("line", { class: "port-link", x1: cx, y1: cy, x2: G.vertices[v].x, y2: G.vertices[v].y }, gPorts);
+      });
+      el("rect", { class: "port-bg", x: cx - 20, y: cy - 13, width: 40, height: 26, rx: 6 }, gPorts);
+      const label = port.type === "any" ? "3:1" : "2:1";
+      el("text", { class: "port", x: cx, y: cy - 4 }, gPorts).textContent = label;
+      const t2 = el("text", { class: "port", x: cx, y: cy + 7, style: "font-size:12px" }, gPorts);
+      t2.textContent = port.type === "any" ? "★" : RES_META[port.type].icon;
+    });
+
+    // Hexes
+    G.hexes.forEach((h) => {
+      const poly = el("polygon", { class: "hex " + h.resource, points: hexPoints(h), "data-hex": h.id }, gHex);
+      if (MODE === "robber" && h.id !== G.robberHex) poly.classList.add("moveable");
+      poly.addEventListener("click", () => onHexClick(h.id));
+      el("text", { class: "hex-label", x: h.x, y: h.y + R * 0.62 }, gHex).textContent = TERRAIN[h.resource];
+      if (h.number !== null) {
+        el("circle", { class: "num-token", cx: h.x, cy: h.y - 4, r: 15 }, gHex);
+        const hot = h.number === 6 || h.number === 8;
+        el("text", { class: "num-text" + (hot ? " hot" : ""), x: h.x, y: h.y - 4 }, gHex).textContent = h.number;
+        // pips
+        const p = pip(h.number); const pw = (p - 1) * 4;
+        for (let i = 0; i < p; i++) el("circle", { class: "num-pips", cx: h.x - pw / 2 + i * 4, cy: h.y + 11, r: 1.5 }, gHex);
+      }
+    });
+
+    // Edges (roads)
+    G.edges.forEach((e) => {
+      const v0 = G.vertices[e.v[0]], v1 = G.vertices[e.v[1]];
+      let cls = "edge";
+      if (e.road !== null) cls += " road";
+      const line = el("line", { class: cls, x1: v0.x, y1: v0.y, x2: v1.x, y2: v1.y, "data-edge": e.id }, gEdge);
+      if (e.road !== null) line.setAttribute("stroke", G.players[e.road].color);
+      let clickable = (MODE === "setupR" || MODE === "road" || MODE === "roadbuild") &&
+        canPlaceRoad(e.id, cur());
+      if (clickable && MODE === "setupR") clickable = e.v.includes(G.setupPendingVertex);
+      if (clickable) { line.classList.add("clickable"); line.addEventListener("click", () => onEdgeClick(e.id)); }
+    });
+
+    // Vertices (buildings + placement spots)
+    G.vertices.forEach((v) => {
+      if (v.building) {
+        const col = G.players[v.building.player].color;
+        if (v.building.type === "city") {
+          el("rect", { class: "vertex-dot", x: v.x - 11, y: v.y - 11, width: 22, height: 22, rx: 4,
+            fill: col, stroke: "#fff", "stroke-width": 2.5 }, gVert);
+          el("rect", { class: "vertex-dot", x: v.x - 5, y: v.y - 16, width: 10, height: 8,
+            fill: col, stroke: "#fff", "stroke-width": 1.5 }, gVert);
+        } else {
+          el("circle", { class: "vertex-dot", cx: v.x, cy: v.y, r: 10, fill: col, stroke: "#fff", "stroke-width": 2.5 }, gVert);
+        }
+      }
+      const requireRoad = MODE === "settlement";
+      const showSpot = (MODE === "setupS" || MODE === "settlement") && canPlaceSettlement(v.id, cur(), requireRoad);
+      const showCity = MODE === "city" && v.building && v.building.player === cur().id && v.building.type === "settlement";
+      if (showSpot) {
+        const c = el("circle", { class: "vspot", cx: v.x, cy: v.y, r: 9 }, gVert);
+        c.addEventListener("click", () => onVertexClick(v.id));
+      } else if (showCity) {
+        const c = el("circle", { class: "vspot", cx: v.x, cy: v.y, r: 12 }, gVert);
+        c.addEventListener("click", () => onVertexClick(v.id));
+      }
+    });
+
+    // Robber
+    const rh = G.hexes[G.robberHex];
+    if (rh) {
+      el("circle", { class: "robber", cx: rh.x + 22, cy: rh.y - 18, r: 11 }, gRobber);
+      el("text", { x: rh.x + 22, y: rh.y - 18, "text-anchor": "middle", "dominant-baseline": "central",
+        "font-size": "12", fill: "#fff", "font-weight": "700" }, gRobber).textContent = "✂";
+    }
+  }
+
+  function renderHand() {
+    const pl = G.players[G.viewPlayer !== undefined ? G.viewPlayer : G.turn];
+    const hr = document.getElementById("hand-resources");
+    hr.innerHTML = "";
+    RES.forEach((r) => {
+      const c = document.createElement("div");
+      c.className = "rescard " + r;
+      c.innerHTML = '<span class="ic">' + RES_META[r].icon + '</span><span class="ct">' + pl.res[r] +
+        '</span><span class="nm">' + RES_META[r].short + "</span>";
+      hr.appendChild(c);
+    });
+
+    const hd = document.getElementById("hand-dev");
+    hd.innerHTML = "";
+    const all = pl.dev.concat(pl.newDev);
+    if (all.length === 0) { hd.innerHTML = '<span class="empty">No policy cards yet.</span>'; }
+    const devInfo = {
+      knight: { t: "Administrator", d: "Move the budget cut & steal" },
+      roadbuild: { t: "Infrastructure Grant", d: "Build 2 free bus routes" },
+      plenty: { t: "State Grant", d: "Take any 2 resources" },
+      monopoly: { t: "Funding Mandate", d: "Name a resource; take all" },
+    };
+    const grouped = {};
+    pl.dev.forEach((d) => { grouped[d] = (grouped[d] || 0) + 1; });
+    Object.keys(grouped).forEach((d) => {
+      const isVP = d.startsWith("vp:");
+      const info = isVP ? { t: d.slice(3), d: "Landmark — 1 victory point" } : devInfo[d];
+      const card = document.createElement("div");
+      const playable = !isVP && !G.devPlayedThisTurn && G.phase === "play" && !pl.isAI && G.turn === pl.id && MODE === "idle";
+      card.className = "devcard" + (playable ? "" : " locked");
+      card.innerHTML = "<b>" + info.t + (grouped[d] > 1 ? " ×" + grouped[d] : "") + "</b><span class='small'>" + info.d + "</span>";
+      if (playable) card.addEventListener("click", () => playDev(d));
+      hd.appendChild(card);
+    });
+    pl.newDev.forEach((d) => {
+      const isVP = d.startsWith("vp:");
+      const info = isVP ? { t: d.slice(3), d: "Landmark — 1 VP" } : devInfo[d];
+      const card = document.createElement("div");
+      card.className = "devcard locked";
+      card.innerHTML = "<b>" + info.t + "</b><span class='small'>Bought this turn</span>";
+      hd.appendChild(card);
+    });
+  }
+
+  function renderScore() {
+    const sb = document.getElementById("scoreboard");
+    sb.innerHTML = "";
+    G.players.forEach((pl) => {
+      const row = document.createElement("div");
+      row.className = "score-row" + (pl.id === G.turn ? " active" : "") + (pl.isAI ? " aiflag" : "");
+      const badges = (pl.hasLongest ? "🚌" : "") + (pl.hasLargest ? "🏛️" : "");
+      row.innerHTML =
+        '<span class="swatch" style="background:' + pl.color + '"></span>' +
+        '<span class="pname">' + escapeHtml(pl.name) + "</span>" +
+        '<span class="pmeta">' + pl.settlements.length + "🏫 " + pl.cities.length + "🏛 · " +
+        handSize(pl) + " cards · " + pl.dev.filter((d) => d === "knight").length + "👔</span>" +
+        '<span class="badge">' + badges + "</span>" +
+        '<span class="vp">' + publicVP(pl) + "</span>";
+      sb.appendChild(row);
+    });
+  }
+
+  function renderActions() {
+    const bar = document.getElementById("action-bar");
+    bar.innerHTML = "";
+    const pl = cur();
+
+    if (G.phase === "setup") {
+      const banner = MODE === "setupS" ? "Click a highlighted corner to place a school."
+        : "Click a highlighted edge to place a bus route.";
+      setBanner("<b>" + escapeHtml(pl.name) + "</b> — setup. " + banner);
+      return;
+    }
+
+    if (G.winner !== null) return;
+
+    if (pl.isAI) { setBanner("<b>" + escapeHtml(pl.name) + "</b> (CPU) is taking its turn…"); return; }
+
+    if (MODE === "robber") { setBanner("<b>" + escapeHtml(pl.name) + "</b> — move the budget cut ✂ to a new community."); return; }
+    if (MODE === "road" || MODE === "roadbuild") { setBanner("Click an edge to place your bus route. <a href='#' id='cancelMode'>Cancel</a>"); wireCancel(); return; }
+    if (MODE === "settlement") { setBanner("Click a corner to build a school. <a href='#' id='cancelMode'>Cancel</a>"); wireCancel(); return; }
+    if (MODE === "city") { setBanner("Click one of your schools to upgrade it to a district campus. <a href='#' id='cancelMode'>Cancel</a>"); wireCancel(); return; }
+
+    if (!G.rolled) {
+      const b = mkBtn("🎲 Roll the year", "btn-primary full", roll);
+      bar.appendChild(b);
+      setBanner("<b>" + escapeHtml(pl.name) + "</b> — roll to collect this year's resources.");
+      return;
+    }
+
+    // action buttons
+    bar.appendChild(mkBtn("Build bus route<span class='cost'>🏗️ 📚</span>", "btn-ghost",
+      () => startBuild("road"), !canAfford(pl, COST.road) || !anyValidRoad(pl)));
+    bar.appendChild(mkBtn("Build school<span class='cost'>🏗️📚🍎🎓</span>", "btn-ghost",
+      () => startBuild("settlement"), !canAfford(pl, COST.settlement) || !anyValidSettlement(pl, true)));
+    bar.appendChild(mkBtn("Consolidate campus<span class='cost'>🎓🎓 💰💰💰</span>", "btn-ghost",
+      () => startBuild("city"), !canAfford(pl, COST.city) || pl.settlements.length === 0));
+    bar.appendChild(mkBtn("Buy policy card<span class='cost'>💰🍎🎓</span>", "btn-ghost",
+      () => buyDev(), !canAfford(pl, COST.dev) || G.devDeck.length === 0));
+    bar.appendChild(mkBtn("Trade with bank", "btn-ghost", openTrade));
+    bar.appendChild(mkBtn("End turn", "btn-primary", endTurn));
+
+    setBanner("<b>" + escapeHtml(pl.name) + "</b> — build, trade, or end your turn.");
+  }
+
+  function wireCancel() {
+    const c = document.getElementById("cancelMode");
+    if (c) c.addEventListener("click", (e) => { e.preventDefault(); MODE = "idle"; renderAll(); });
+  }
+
+  function mkBtn(html, cls, fn, disabled) {
+    const b = document.createElement("button");
+    b.className = "btn btn-sm " + (cls || "");
+    b.innerHTML = html;
+    if (disabled) b.disabled = true; else b.addEventListener("click", fn);
+    return b;
+  }
+
+  function setBanner(html) { document.getElementById("turn-banner").innerHTML = html; }
+
+  function renderAll() {
+    G.viewPlayer = G.turn;
+    renderBoard();
+    renderHand();
+    renderScore();
+    renderActions();
+  }
+
+  function escapeHtml(s) { return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+  /* ---------------- Log ---------------- */
+  function log(msg, pl) {
+    const box = document.getElementById("log");
+    const e = document.createElement("div");
+    e.className = "entry";
+    const who = pl ? '<span class="who" style="color:' + pl.color + '">' + escapeHtml(pl.name) + ":</span> " : "";
+    e.innerHTML = who + msg;
+    box.appendChild(e);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  /* ---------------- Setup phase ---------------- */
+  function beginSetupStep() {
+    if (G.setupStep >= G.setupOrder.length) { endSetup(); return; }
+    const step = G.setupOrder[G.setupStep];
+    G.turn = step.p;
+    MODE = "setupS";
+    renderAll();
+    if (cur().isAI) setTimeout(aiSetup, 550);
+  }
+
+  function endSetup() {
+    G.phase = "play";
+    G.turn = 0;
+    G.rolled = false;
+    G.devPlayedThisTurn = false;
+    MODE = "idle";
+    log("Setup complete. " + escapeHtml(G.players[0].name) + " starts.", null);
+    renderAll();
+    maybeAITurn();
+  }
+
+  function placeSetupSettlement(vId) {
+    const pl = cur();
+    const step = G.setupOrder[G.setupStep];
+    G.vertices[vId].building = { type: "settlement", player: pl.id };
+    pl.settlements.push(vId);
+    log("built a school.", pl);
+    // second settlement grants starting resources
+    if (step.round === 2) {
+      G.vertices[vId].hexes.forEach((hId) => {
+        const h = G.hexes[hId];
+        if (h.resource !== "vacant") pl.res[h.resource] += 1;
+      });
+    }
+    MODE = "setupR";
+    G.setupPendingVertex = vId;
+    renderAll();
+    if (pl.isAI) setTimeout(aiSetupRoad, 500);
+  }
+
+  function placeSetupRoad(eId) {
+    const pl = cur();
+    G.edges[eId].road = pl.id;
+    pl.roads.push(eId);
+    log("added a bus route.", pl);
+    G.setupStep++;
+    G.setupPendingVertex = null;
+    beginSetupStep();
+  }
+
+  /* ---------------- Dice / production ---------------- */
+  function roll() {
+    if (G.rolled) return;
+    const a = d6(), b = d6(), total = a + b;
+    G.rolled = true;
+    document.getElementById("die1").textContent = a;
+    document.getElementById("die2").textContent = b;
+    document.getElementById("die1").classList.add("rolling");
+    document.getElementById("die2").classList.add("rolling");
+    document.getElementById("dice-total").innerHTML = "rolled <b>" + total + "</b>";
+    setTimeout(() => { document.getElementById("die1").classList.remove("rolling"); document.getElementById("die2").classList.remove("rolling"); }, 500);
+    log("rolled a <b>" + total + "</b>.", cur());
+
+    if (total === 7) { handleSeven(); return; }
+    distribute(total);
+    renderAll();
+    if (cur().isAI) setTimeout(aiPlay, 650);
+  }
+
+  function distribute(total) {
+    const gains = G.players.map(() => ({ students: 0, funding: 0, teachers: 0, facilities: 0, supplies: 0 }));
+    G.hexes.forEach((h) => {
+      if (h.number !== total || h.robber || h.resource === "vacant") return;
+      h.corners.forEach((vId) => {
+        const v = G.vertices[vId];
+        if (!v.building) return;
+        const amt = v.building.type === "city" ? 2 : 1;
+        gains[v.building.player][h.resource] += amt;
+      });
+    });
+    let any = false;
+    G.players.forEach((pl, i) => {
+      RES.forEach((r) => { if (gains[i][r] > 0) { pl.res[r] += gains[i][r]; any = true; } });
+      const parts = RES.filter((r) => gains[i][r] > 0).map((r) => gains[i][r] + RES_META[r].icon);
+      if (parts.length) log("collected " + parts.join(" "), pl);
+    });
+    if (!any) log("No district collected on that roll.", null);
+  }
+
+  /* ---------------- The 7: discard + robber ---------------- */
+  function handleSeven() {
+    log("A budget cut! (rolled 7)", null);
+    const needDiscard = G.players.filter((pl) => handSize(pl) > HAND_LIMIT);
+    // AI discards immediately; humans use modal chain
+    const humans = needDiscard.filter((pl) => !pl.isAI);
+    needDiscard.filter((pl) => pl.isAI).forEach((pl) => aiDiscard(pl));
+
+    if (humans.length === 0) { proceedToRobber(); return; }
+    discardChain(humans, 0);
+  }
+
+  function discardChain(list, idx) {
+    if (idx >= list.length) { proceedToRobber(); return; }
+    openDiscardModal(list[idx], () => discardChain(list, idx + 1));
+  }
+
+  function proceedToRobber() {
+    if (cur().isAI) { setTimeout(() => aiMoveRobber(), 500); return; }
+    MODE = "robber";
+    renderAll();
+  }
+
+  function moveRobber(hexId, byPlayer, cb) {
+    G.hexes[G.robberHex].robber = false;
+    G.robberHex = hexId;
+    G.hexes[hexId].robber = true;
+    log("moved the budget cut to " + TERRAIN[G.hexes[hexId].resource] + ".", byPlayer);
+    // steal target: players with a building on this hex (not self)
+    const victims = new Set();
+    G.hexes[hexId].corners.forEach((vId) => {
+      const v = G.vertices[vId];
+      if (v.building && v.building.player !== byPlayer.id && handSize(G.players[v.building.player]) > 0)
+        victims.add(v.building.player);
+    });
+    const vlist = [...victims];
+    if (vlist.length === 0) { if (cb) cb(); return; }
+    if (byPlayer.isAI) {
+      // steal from the richest victim
+      vlist.sort((a, b) => handSize(G.players[b]) - handSize(G.players[a]));
+      stealFrom(byPlayer, G.players[vlist[0]]);
+      if (cb) cb();
+    } else if (vlist.length === 1) {
+      stealFrom(byPlayer, G.players[vlist[0]]);
+      if (cb) cb();
+    } else {
+      chooseVictim(byPlayer, vlist, cb);
+    }
+  }
+
+  function stealFrom(thief, victim) {
+    const pool = [];
+    RES.forEach((r) => { for (let i = 0; i < victim.res[r]; i++) pool.push(r); });
+    if (pool.length === 0) return;
+    const r = pool[rnd(pool.length)];
+    victim.res[r]--; thief.res[r]++;
+    log("stole a resource from " + escapeHtml(victim.name) + ".", thief);
+  }
+
+  /* ---------------- Building actions (play phase) ---------------- */
+  function startBuild(type) {
+    const pl = cur();
+    if (type === "road") { if (!canAfford(pl, COST.road)) return; MODE = "road"; }
+    else if (type === "settlement") { if (!canAfford(pl, COST.settlement)) return; MODE = "settlement"; }
+    else if (type === "city") { if (!canAfford(pl, COST.city)) return; MODE = "city"; }
+    renderAll();
+  }
+
+  function buildRoad(eId, free) {
+    const pl = cur();
+    if (!free) pay(pl, COST.road);
+    G.edges[eId].road = pl.id;
+    pl.roads.push(eId);
+    log("built a bus route.", pl);
+    updateLongestRoad();
+    MODE = "idle";
+    renderAll();
+    checkWin();
+  }
+
+  function buildSettlement(vId) {
+    const pl = cur();
+    pay(pl, COST.settlement);
+    G.vertices[vId].building = { type: "settlement", player: pl.id };
+    pl.settlements.push(vId);
+    log("opened a new school.", pl);
+    updateLongestRoad(); // opponent roads can be cut
+    MODE = "idle";
+    renderAll();
+    checkWin();
+  }
+
+  function buildCity(vId) {
+    const pl = cur();
+    pay(pl, COST.city);
+    G.vertices[vId].building = { type: "city", player: pl.id };
+    pl.settlements = pl.settlements.filter((s) => s !== vId);
+    pl.cities.push(vId);
+    log("consolidated a school into a district campus. 🏛️", pl);
+    MODE = "idle";
+    renderAll();
+    checkWin();
+  }
+
+  function buyDev() {
+    const pl = cur();
+    if (!canAfford(pl, COST.dev) || G.devDeck.length === 0) return;
+    pay(pl, COST.dev);
+    const card = G.devDeck.pop();
+    if (card.startsWith("vp:")) { pl.dev.push(card); pl.vpCards++; log("filed a landmark policy. 🏆", pl); checkWin(); }
+    else { pl.newDev.push(card); log("bought a policy card.", pl); }
+    renderAll();
+  }
+
+  /* ---------------- Dev cards ---------------- */
+  function playDev(type) {
+    const pl = cur();
+    if (G.devPlayedThisTurn || pl.isAI) return;
+    if (type.startsWith("vp:")) return;
+    // remove one from dev (not newDev)
+    const i = pl.dev.indexOf(type);
+    if (i < 0) return;
+    pl.dev.splice(i, 1);
+    G.devPlayedThisTurn = true;
+
+    if (type === "knight") {
+      pl.playedKnights++;
+      log("deployed an Administrator. 👔", pl);
+      updateLargestArmy();
+      MODE = "robber";
+      renderAll();
+    } else if (type === "roadbuild") {
+      log("used an Infrastructure Grant — 2 free routes.", pl);
+      pendingRoadBuilds = 2;
+      startRoadBuild();
+    } else if (type === "plenty") {
+      log("received a State Grant.", pl);
+      openPlentyModal();
+    } else if (type === "monopoly") {
+      openMonopolyModal();
+    }
+  }
+
+  function startRoadBuild() {
+    const pl = cur();
+    if (pendingRoadBuilds <= 0 || !anyValidRoad(pl)) { pendingRoadBuilds = 0; MODE = "idle"; renderAll(); return; }
+    MODE = "roadbuild";
+    renderAll();
+  }
+
+  /* ---------------- Longest road / largest army ---------------- */
+  function longestRoadFor(pi) {
+    const adj = {};
+    G.edges.forEach((e) => {
+      if (e.road !== pi) return;
+      const [a, b] = e.v;
+      (adj[a] = adj[a] || []).push({ to: b, e: e.id });
+      (adj[b] = adj[b] || []).push({ to: a, e: e.id });
+    });
+    const blocked = (v) => { const b = G.vertices[v].building; return b && b.player !== pi; };
+    let best = 0;
+    function dfs(v, used, len) {
+      if (len > best) best = len;
+      if (blocked(v)) return;              // cannot pass through opponent building
+      for (const nb of (adj[v] || [])) {
+        if (used.has(nb.e)) continue;
+        used.add(nb.e);
+        dfs(nb.to, used, len + 1);
+        used.delete(nb.e);
+      }
+    }
+    Object.keys(adj).forEach((v) => dfs(+v, new Set(), 0));
+    return best;
+  }
+
+  function updateLongestRoad() {
+    G.players.forEach((pl) => { pl.longestLen = longestRoadFor(pl.id); });
+    const holder = G.players.find((pl) => pl.hasLongest);
+    let best = LONGEST_MIN - 1, bestPl = null;
+    G.players.forEach((pl) => { if (pl.longestLen > best) { best = pl.longestLen; bestPl = pl; } });
+
+    if (!bestPl) { // nobody qualifies; if holder dropped below min, revoke
+      if (holder && holder.longestLen < LONGEST_MIN) { holder.hasLongest = false; log("lost the Longest Bus Network.", holder); }
+      return;
+    }
+    if (holder) {
+      if (holder.longestLen >= bestPl.longestLen) return; // holder keeps on tie
+      holder.hasLongest = false;
+    }
+    // check for unique leader (ties: nobody takes it from unheld state)
+    const tied = G.players.filter((pl) => pl.longestLen === best);
+    if (tied.length === 1) {
+      if (!bestPl.hasLongest) { bestPl.hasLongest = true; log("claimed the Longest Bus Network! (+2 VP)", bestPl); }
+    }
+  }
+
+  function updateLargestArmy() {
+    const holder = G.players.find((pl) => pl.hasLargest);
+    let best = ARMY_MIN - 1, bestPl = null;
+    G.players.forEach((pl) => { if (pl.playedKnights > best) { best = pl.playedKnights; bestPl = pl; } });
+    if (!bestPl) return;
+    if (holder) {
+      if (holder.playedKnights >= bestPl.playedKnights) return;
+      holder.hasLargest = false;
+    }
+    if (!bestPl.hasLargest) { bestPl.hasLargest = true; log("earned the Strongest Administration! (+2 VP)", bestPl); }
+  }
+
+  /* ---------------- Turn flow ---------------- */
+  function endTurn() {
+    const pl = cur();
+    // move newly bought dev cards into playable hand
+    pl.dev = pl.dev.concat(pl.newDev);
+    pl.newDev = [];
+    G.rolled = false;
+    G.devPlayedThisTurn = false;
+    pendingRoadBuilds = 0;
+    MODE = "idle";
+    G.turn = (G.turn + 1) % G.players.length;
+    document.getElementById("die1").textContent = "–";
+    document.getElementById("die2").textContent = "–";
+    document.getElementById("dice-total").textContent = "";
+    renderAll();
+    maybeAITurn();
+  }
+
+  function checkWin() {
+    const pl = cur();
+    if (totalVP(pl) >= WIN_VP) {
+      G.winner = pl.id;
+      renderAll();
+      openWinModal(pl);
+    }
+  }
+
+  /* ---------------- Click routing ---------------- */
+  function onVertexClick(vId) {
+    if (G.winner !== null) return;
+    const pl = cur();
+    if (MODE === "setupS") {
+      if (canPlaceSettlement(vId, pl, false)) placeSetupSettlement(vId);
+    } else if (MODE === "settlement") {
+      if (canPlaceSettlement(vId, pl, true)) buildSettlement(vId);
+    } else if (MODE === "city") {
+      const v = G.vertices[vId];
+      if (v.building && v.building.player === pl.id && v.building.type === "settlement") buildCity(vId);
+    }
+  }
+
+  function onEdgeClick(eId) {
+    if (G.winner !== null) return;
+    const pl = cur();
+    if (!canPlaceRoad(eId, pl)) return;
+    if (MODE === "setupR") { if (G.edges[eId].v.includes(G.setupPendingVertex)) placeSetupRoad(eId); }
+    else if (MODE === "road") buildRoad(eId, false);
+    else if (MODE === "roadbuild") {
+      buildRoad(eId, true);
+      pendingRoadBuilds--;
+      if (pendingRoadBuilds > 0 && anyValidRoad(pl)) startRoadBuild();
+      else { pendingRoadBuilds = 0; MODE = "idle"; renderAll(); }
+    }
+  }
+
+  function onHexClick(hexId) {
+    if (MODE !== "robber" || hexId === G.robberHex) return;
+    moveRobber(hexId, cur(), () => { MODE = "idle"; renderAll(); checkWin(); });
+  }
+
+  /* ---------------- Bank / port trading ---------------- */
+  function tradeRate(pl, giveRes) {
+    let rate = 4;
+    // ports on player's building vertices
+    pl.settlements.concat(pl.cities).forEach((vId) => {
+      const port = G.vertices[vId].port;
+      if (!port) return;
+      if (port.type === "any") rate = Math.min(rate, 3);
+      if (port.type === giveRes) rate = Math.min(rate, 2);
+    });
+    return rate;
+  }
+
+  function openTrade() {
+    const pl = cur();
+    const body = document.createElement("div");
+    body.innerHTML = "<p class='small'>Trade resources with the bank. Your rate improves if you have a school on a trading port.</p>";
+
+    const state = { give: null, get: null };
+    const grid = document.createElement("div");
+    grid.className = "trade-grid";
+
+    const giveCol = document.createElement("div"); giveCol.className = "trade-col";
+    giveCol.innerHTML = "<h4>You give</h4>";
+    RES.forEach((r) => {
+      const rate = tradeRate(pl, r);
+      const opt = document.createElement("div"); opt.className = "trade-opt";
+      const btn = document.createElement("button"); btn.className = "btn btn-sm btn-ghost";
+      btn.innerHTML = RES_META[r].icon + " " + rate + "×";
+      btn.disabled = pl.res[r] < rate;
+      btn.addEventListener("click", () => { state.give = r; highlight(giveCol, btn); refreshGetBtns(); });
+      opt.appendChild(btn);
+      opt.appendChild(document.createTextNode(" have " + pl.res[r]));
+      giveCol.appendChild(opt);
+    });
+
+    const arrow = document.createElement("div"); arrow.textContent = "→"; arrow.style.fontSize = "24px"; arrow.style.textAlign = "center";
+
+    const getCol = document.createElement("div"); getCol.className = "trade-col";
+    getCol.innerHTML = "<h4>You get</h4>";
+    const getBtns = {};
+    RES.forEach((r) => {
+      const opt = document.createElement("div"); opt.className = "trade-opt";
+      const btn = document.createElement("button"); btn.className = "btn btn-sm btn-ghost";
+      btn.innerHTML = RES_META[r].icon + " +1";
+      btn.addEventListener("click", () => { state.get = r; highlight(getCol, btn); });
+      getBtns[r] = btn; opt.appendChild(btn); getCol.appendChild(opt);
+    });
+    function refreshGetBtns() { RES.forEach((r) => { getBtns[r].disabled = (r === state.give); }); }
+
+    grid.appendChild(giveCol); grid.appendChild(arrow); grid.appendChild(getCol);
+    body.appendChild(grid);
+
+    function highlight(col, btn) {
+      col.querySelectorAll("button").forEach((b) => b.classList.remove("btn-primary"));
+      btn.classList.remove("btn-ghost"); btn.classList.add("btn-primary");
+    }
+
+    openModal("Trade with the bank", body, [
+      { label: "Confirm trade", cls: "btn-primary", fn: () => {
+          if (!state.give || !state.get || state.give === state.get) return;
+          const rate = tradeRate(pl, state.give);
+          if (pl.res[state.give] < rate) return;
+          pl.res[state.give] -= rate; pl.res[state.get] += 1;
+          log("traded " + rate + RES_META[state.give].icon + " → 1" + RES_META[state.get].icon + " with the bank.", pl);
+          closeModal(); renderAll();
+        } },
+      { label: "Cancel", cls: "btn-ghost", fn: closeModal },
+    ]);
+  }
+
+  /* ---------------- Modals ---------------- */
+  const backdrop = document.getElementById("modal-backdrop");
+  function openModal(title, bodyNode, actions) {
+    document.getElementById("modal-title").textContent = title;
+    const body = document.getElementById("modal-body");
+    body.innerHTML = ""; body.appendChild(bodyNode);
+    const act = document.getElementById("modal-actions");
+    act.innerHTML = "";
+    (actions || []).forEach((a) => {
+      const b = document.createElement("button");
+      b.className = "btn " + (a.cls || "btn-ghost");
+      b.textContent = a.label;
+      b.addEventListener("click", a.fn);
+      act.appendChild(b);
+    });
+    backdrop.hidden = false;
+  }
+  function closeModal() { backdrop.hidden = true; }
+
+  function openDiscardModal(pl, done) {
+    const need = Math.floor(handSize(pl) / 2);
+    const sel = { students: 0, funding: 0, teachers: 0, facilities: 0, supplies: 0 };
+    const body = document.createElement("div");
+    const info = document.createElement("p");
+    info.innerHTML = "<b>" + escapeHtml(pl.name) + "</b>, the budget cut forces you to discard <b>" + need + "</b> of your " + handSize(pl) + " cards.";
+    body.appendChild(info);
+    const status = document.createElement("p"); status.className = "small";
+
+    function chosenCount() { return RES.reduce((s, r) => s + sel[r], 0); }
+    function refresh() {
+      const c = chosenCount();
+      status.textContent = "Selected " + c + " / " + need;
+      const rc = document.querySelector("#modal-actions .btn-primary");
+      if (rc) rc.disabled = c !== need;
+    }
+
+    RES.forEach((r) => {
+      const row = document.createElement("div"); row.className = "give-row";
+      row.innerHTML = "<span>" + RES_META[r].icon + " " + RES_META[r].name + " (have " + pl.res[r] + ")</span>";
+      const step = document.createElement("div"); step.className = "stepper";
+      const minus = document.createElement("button"); minus.textContent = "−";
+      const cnt = document.createElement("span");
+      cnt.textContent = "0"; cnt.style.minWidth = "18px"; cnt.style.textAlign = "center"; cnt.style.display = "inline-block";
+      const plus = document.createElement("button"); plus.textContent = "+";
+      minus.addEventListener("click", () => { if (sel[r] > 0) { sel[r]--; cnt.textContent = sel[r]; refresh(); } });
+      plus.addEventListener("click", () => {
+        if (sel[r] < pl.res[r] && chosenCount() < need) { sel[r]++; cnt.textContent = sel[r]; refresh(); }
+      });
+      step.appendChild(minus); step.appendChild(cnt); step.appendChild(plus);
+      row.appendChild(step); body.appendChild(row);
+    });
+    body.appendChild(status);
+
+    openModal("Budget cut — discard", body, [{
+      label: "Discard", cls: "btn-primary", fn: () => {
+        if (chosenCount() !== need) return;
+        RES.forEach((r) => { pl.res[r] -= sel[r]; });
+        log("discarded " + need + " cards to the budget cut.", pl);
+        closeModal(); done();
+      },
+    }]);
+    refresh();
+  }
+
+  function chooseVictim(thief, vlist, cb) {
+    const body = document.createElement("div");
+    body.innerHTML = "<p>Choose a district to steal one resource from:</p>";
+    const wrap = document.createElement("div");
+    vlist.forEach((pid) => {
+      const v = G.players[pid];
+      const b = document.createElement("button");
+      b.className = "btn btn-ghost"; b.style.margin = "4px";
+      b.innerHTML = '<span style="color:' + v.color + '">●</span> ' + escapeHtml(v.name) + " (" + handSize(v) + " cards)";
+      b.addEventListener("click", () => { stealFrom(thief, v); closeModal(); if (cb) cb(); });
+      wrap.appendChild(b);
+    });
+    body.appendChild(wrap);
+    openModal("Steal a resource", body, []);
+  }
+
+  function openPlentyModal() {
+    const pl = cur();
+    const picks = [];
+    const body = document.createElement("div");
+    body.innerHTML = "<p>State Grant: choose <b>2</b> resources to take from the bank.</p>";
+    const status = document.createElement("p"); status.className = "small";
+    RES.forEach((r) => {
+      const b = document.createElement("button"); b.className = "btn btn-ghost"; b.style.margin = "3px";
+      b.innerHTML = RES_META[r].icon + " " + RES_META[r].name;
+      b.addEventListener("click", () => { if (picks.length < 2) { picks.push(r); status.textContent = "Chosen: " + picks.map((x) => RES_META[x].short).join(", "); if (picks.length === 2) confirm.disabled = false; } });
+      body.appendChild(b);
+    });
+    body.appendChild(status);
+    let confirm;
+    openModal("State Grant", body, [
+      { label: "Take resources", cls: "btn-primary", fn: () => { picks.forEach((r) => pl.res[r]++); log("took 2 resources via State Grant.", pl); closeModal(); renderAll(); } },
+      { label: "Cancel", cls: "btn-ghost", fn: () => { pl.dev.push("plenty"); G.devPlayedThisTurn = false; closeModal(); renderAll(); } },
+    ]);
+    confirm = document.querySelector("#modal-actions .btn-primary"); confirm.disabled = true;
+  }
+
+  function openMonopolyModal() {
+    const pl = cur();
+    const body = document.createElement("div");
+    body.innerHTML = "<p>Funding Mandate: name one resource. Every other district must hand you all of theirs.</p>";
+    RES.forEach((r) => {
+      const b = document.createElement("button"); b.className = "btn btn-ghost"; b.style.margin = "3px";
+      b.innerHTML = RES_META[r].icon + " " + RES_META[r].name;
+      b.addEventListener("click", () => {
+        let total = 0;
+        G.players.forEach((op) => { if (op.id !== pl.id) { total += op.res[r]; op.res[r] = 0; } });
+        pl.res[r] += total;
+        log("issued a Funding Mandate on " + RES_META[r].name + " — collected " + total + RES_META[r].icon + ".", pl);
+        closeModal(); renderAll();
+      });
+      body.appendChild(b);
+    });
+    openModal("Funding Mandate", body, []);
+  }
+
+  function openWinModal(pl) {
+    const body = document.createElement("div");
+    body.className = "winner-box";
+    body.innerHTML = '<div class="trophy">🏆</div><h3 style="margin:6px 0">' + escapeHtml(pl.name) + " wins!</h3>" +
+      "<p>Reached " + totalVP(pl) + " victory points and built the county's strongest district.</p>";
+    openModal("Victory", body, [
+      { label: "New game", cls: "btn-primary", fn: () => location.reload() },
+      { label: "View board", cls: "btn-ghost", fn: closeModal },
+    ]);
+  }
+
+  /* ============================================================
+     AI  (simple greedy opponent)
+     ============================================================ */
+  function maybeAITurn() { if (G.winner === null && cur().isAI) setTimeout(aiTurn, 700); }
+  function maybeAIPlay() { if (G.winner === null && cur().isAI) setTimeout(aiPlay, 650); }
+
+  function aiTurn() {
+    if (G.winner !== null || !cur().isAI) return;
+    roll(); // roll() will chain into aiPlay via distribute path, or robber path
+  }
+
+  function aiSetup() {
+    const pl = cur();
+    // choose best empty vertex by production pips + resource variety
+    let best = null, bestScore = -1;
+    G.vertices.forEach((v) => {
+      if (!canPlaceSettlement(v.id, pl, false)) return;
+      let score = 0; const kinds = new Set();
+      v.hexes.forEach((hId) => { const h = G.hexes[hId]; if (h.resource !== "vacant") { score += pip(h.number); kinds.add(h.resource); } });
+      score += kinds.size * 1.5;
+      if (v.port) score += 0.5;
+      if (score > bestScore) { bestScore = score; best = v.id; }
+    });
+    if (best !== null) placeSetupSettlement(best);
+  }
+
+  function aiSetupRoad() {
+    const pl = cur();
+    const vId = G.setupPendingVertex;
+    // pick an edge from the settlement toward the highest-value open neighbor
+    const opts = G.vertices[vId].edges.filter((eId) => canPlaceRoad(eId, pl));
+    if (opts.length === 0) { // fallback any valid
+      const any = G.edges.filter((e) => canPlaceRoad(e.id, pl)).map((e) => e.id);
+      if (any.length) placeSetupRoad(any[0]);
+      else { G.setupStep++; beginSetupStep(); }
+      return;
+    }
+    let best = opts[0], bestScore = -1;
+    opts.forEach((eId) => {
+      const e = G.edges[eId];
+      const other = e.v[0] === vId ? e.v[1] : e.v[0];
+      let score = 0;
+      G.vertices[other].hexes.forEach((hId) => { const h = G.hexes[hId]; if (h.resource !== "vacant") score += pip(h.number); });
+      if (score > bestScore) { bestScore = score; best = eId; }
+    });
+    placeSetupRoad(best);
+  }
+
+  function aiDiscard(pl) {
+    let need = Math.floor(handSize(pl) / 2);
+    // discard from most-plentiful resources
+    while (need > 0) {
+      let r = RES.slice().sort((a, b) => pl.res[b] - pl.res[a])[0];
+      if (pl.res[r] <= 0) break;
+      pl.res[r]--; need--;
+    }
+    log("discarded cards to the budget cut.", pl);
+  }
+
+  function aiMoveRobber() {
+    const pl = cur();
+    // move to a hex touching the leading opponent, not touching self
+    let bestHex = null, bestScore = -1;
+    G.hexes.forEach((h) => {
+      if (h.id === G.robberHex || h.resource === "vacant") return;
+      let touchesSelf = false, score = 0;
+      h.corners.forEach((vId) => {
+        const v = G.vertices[vId];
+        if (!v.building) return;
+        if (v.building.player === pl.id) touchesSelf = true;
+        else score += totalVP(G.players[v.building.player]) + handSize(G.players[v.building.player]) * 0.2;
+      });
+      if (touchesSelf) score -= 100;
+      if (score > bestScore) { bestScore = score; bestHex = h.id; }
+    });
+    if (bestHex === null) bestHex = G.hexes.find((h) => h.id !== G.robberHex).id;
+    moveRobber(bestHex, pl, () => { renderAll(); if (G.phase === "play") maybeAIPlay(); });
+  }
+
+  function aiPlay() {
+    if (G.winner !== null || !cur().isAI) return;
+    const pl = cur();
+
+    // play a knight early if it helps grab largest army and we have one
+    if (!G.devPlayedThisTurn && pl.dev.includes("knight") && pl.playedKnights >= ARMY_MIN - 1 && !pl.hasLargest) {
+      const i = pl.dev.indexOf("knight"); pl.dev.splice(i, 1);
+      pl.playedKnights++; G.devPlayedThisTurn = true;
+      log("deployed an Administrator. 👔", pl);
+      updateLargestArmy();
+      aiMoveRobber();
+      return; // aiMoveRobber re-enters aiPlay
+    }
+
+    let acted = true, guard = 0;
+    while (acted && guard++ < 30) {
+      acted = false;
+      if (G.winner !== null) return;
+
+      // 1) city
+      if (pl.settlements.length > 0 && aiEnsure(pl, COST.city)) {
+        const vId = aiBestCity(pl);
+        if (vId !== null) { buildCityAI(vId); acted = true; if (G.winner !== null) return; continue; }
+      }
+      // 2) settlement
+      if (anyValidSettlement(pl, true) && aiEnsure(pl, COST.settlement)) {
+        const vId = aiBestSettlement(pl);
+        if (vId !== null) { buildSettlementAI(vId); acted = true; if (G.winner !== null) return; continue; }
+      }
+      // 3) buy dev if flush
+      if (G.devDeck.length && handSize(pl) >= 7 && aiEnsure(pl, COST.dev)) {
+        buyDevAI(); acted = true; continue;
+      }
+      // 4) road toward expansion
+      if (anyValidRoad(pl) && pl.roads.length < 14 && aiWantsRoad(pl) && aiEnsure(pl, COST.road)) {
+        const eId = aiBestRoad(pl);
+        if (eId !== null) { buildRoadAI(eId); acted = true; continue; }
+      }
+    }
+    setTimeout(() => { if (G.winner === null) endTurn(); }, 400);
+  }
+
+  // AI build wrappers (no MODE juggling)
+  function buildCityAI(vId) {
+    const pl = cur(); pay(pl, COST.city);
+    G.vertices[vId].building = { type: "city", player: pl.id };
+    pl.settlements = pl.settlements.filter((s) => s !== vId); pl.cities.push(vId);
+    log("consolidated a campus. 🏛️", pl); renderAll(); checkWin();
+  }
+  function buildSettlementAI(vId) {
+    const pl = cur(); pay(pl, COST.settlement);
+    G.vertices[vId].building = { type: "settlement", player: pl.id }; pl.settlements.push(vId);
+    log("opened a new school.", pl); updateLongestRoad(); renderAll(); checkWin();
+  }
+  function buildRoadAI(eId) {
+    const pl = cur(); pay(pl, COST.road);
+    G.edges[eId].road = pl.id; pl.roads.push(eId);
+    log("built a bus route.", pl); updateLongestRoad(); renderAll(); checkWin();
+  }
+  function buyDevAI() {
+    const pl = cur(); pay(pl, COST.dev);
+    const card = G.devDeck.pop();
+    if (card.startsWith("vp:")) { pl.dev.push(card); pl.vpCards++; log("filed a landmark policy. 🏆", pl); checkWin(); }
+    else { pl.newDev.push(card); log("bought a policy card.", pl); }
+    renderAll();
+  }
+
+  // Try to make `cost` affordable via 4:1/port bank trades. Returns true if affordable now.
+  function aiEnsure(pl, cost) {
+    if (canAfford(pl, cost)) return true;
+    let guard = 0;
+    while (!canAfford(pl, cost) && guard++ < 20) {
+      // find a needed resource
+      const need = Object.keys(cost).find((r) => pl.res[r] < cost[r]);
+      if (!need) break;
+      // find a surplus resource to trade away (not itself needed)
+      let gaveSomething = false;
+      const cand = RES.filter((r) => r !== need)
+        .map((r) => ({ r, rate: tradeRate(pl, r) }))
+        .sort((a, b) => a.rate - b.rate);
+      for (const c of cand) {
+        const keepFor = cost[c.r] || 0;
+        if (pl.res[c.r] - c.rate >= keepFor) {
+          pl.res[c.r] -= c.rate; pl.res[need]++;
+          log("traded " + c.rate + RES_META[c.r].icon + " → 1" + RES_META[need].icon + " with the bank.", pl);
+          gaveSomething = true; break;
+        }
+      }
+      if (!gaveSomething) break;
+    }
+    return canAfford(pl, cost);
+  }
+
+  function aiBestCity(pl) {
+    let best = null, bestScore = -1;
+    pl.settlements.forEach((vId) => {
+      let score = 0;
+      G.vertices[vId].hexes.forEach((hId) => { const h = G.hexes[hId]; if (h.resource !== "vacant") score += pip(h.number); });
+      if (score > bestScore) { bestScore = score; best = vId; }
+    });
+    return best;
+  }
+  function aiBestSettlement(pl) {
+    let best = null, bestScore = -1;
+    G.vertices.forEach((v) => {
+      if (!canPlaceSettlement(v.id, pl, true)) return;
+      let score = 0; const kinds = new Set();
+      v.hexes.forEach((hId) => { const h = G.hexes[hId]; if (h.resource !== "vacant") { score += pip(h.number); kinds.add(h.resource); } });
+      score += kinds.size + (v.port ? 1 : 0);
+      if (score > bestScore) { bestScore = score; best = v.id; }
+    });
+    return best;
+  }
+  function aiWantsRoad(pl) {
+    // build roads only if it might open a new settlement spot and we don't already have one available
+    return !anyValidSettlement(pl, true) || pl.roads.length < 3;
+  }
+  function aiBestRoad(pl) {
+    let best = null, bestScore = -1;
+    G.edges.forEach((e) => {
+      if (!canPlaceRoad(e.id, pl)) return;
+      // value: does it reach toward a buildable vertex?
+      let score = Math.random();
+      e.v.forEach((vId) => {
+        if (canPlaceSettlement(vId, pl, false)) {
+          G.vertices[vId].hexes.forEach((hId) => { const h = G.hexes[hId]; if (h.resource !== "vacant") score += pip(h.number); });
+        }
+        vertexNeighbors(vId).forEach((nb) => {
+          if (canPlaceSettlement(nb, pl, false)) score += 1;
+        });
+      });
+      if (score > bestScore) { bestScore = score; best = e.id; }
+    });
+    return best;
+  }
+
+  /* ---------------- Start screen wiring ---------------- */
+  function buildPlayerConfig() {
+    const n = +document.getElementById("numPlayers").value;
+    const wrap = document.getElementById("playerConfig");
+    wrap.innerHTML = "";
+    for (let i = 0; i < n; i++) {
+      const row = document.createElement("div"); row.className = "player-row";
+      row.innerHTML =
+        '<span class="swatch" style="background:' + PLAYER_COLORS[i].fill + '"></span>' +
+        '<input type="text" value="' + DEFAULT_NAMES[i] + '" data-name="' + i + '">' +
+        '<label class="aitoggle"><input type="checkbox" data-ai="' + i + '"' + (i === 0 ? "" : " checked") + '> CPU</label>';
+      wrap.appendChild(row);
+    }
+  }
+
+  function startFromConfig() {
+    const n = +document.getElementById("numPlayers").value;
+    const defs = [];
+    for (let i = 0; i < n; i++) {
+      const name = document.querySelector('[data-name="' + i + '"]').value.trim() || DEFAULT_NAMES[i];
+      const isAI = document.querySelector('[data-ai="' + i + '"]').checked;
+      defs.push({ name, isAI });
+    }
+    document.getElementById("start-screen").hidden = true;
+    document.getElementById("game-screen").hidden = false;
+    newGame(defs);
+  }
+
+  document.getElementById("numPlayers").addEventListener("change", buildPlayerConfig);
+  document.getElementById("startBtn").addEventListener("click", startFromConfig);
+  document.getElementById("howtoBtn").addEventListener("click", () => {
+    const h = document.getElementById("howto"); h.hidden = !h.hidden;
+  });
+  document.getElementById("closeHowto").addEventListener("click", () => { document.getElementById("howto").hidden = true; });
+
+  buildPlayerConfig();
+})();
+
+</script>
+</body>
+</html>
